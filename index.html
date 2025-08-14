@@ -1,140 +1,470 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, viewport-fit=cover"
+/>
 <title>Smart Orientation App</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #fceabb, #f8b500);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    color: #fff;
+  :root{
+    --bg1:#dff0ff;
+    --bg2:#e6fff7;
+    --glass: rgba(255,255,255,.32);
+    --glass-strong: rgba(255,255,255,.55);
+    --text:#12324a;
+    --muted:#4f6b83;
+    --accent:#0ea5e9;
+    --accent-2:#22c55e;
   }
-  .glass {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(12px);
-    border-radius: 20px;
-    padding: 20px;
-    max-width: 350px;
-    text-align: center;
-    box-shadow: 0 4px 30px rgba(0,0,0,0.2);
-    animation: fadeIn 1s ease-in-out;
+
+  /* Base layout */
+  html,body{
+    height:100%;
   }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+    color:var(--text);
+    background:
+      radial-gradient(1200px 800px at 20% -10%, rgba(255,255,255,.65), transparent 60%),
+      radial-gradient(900px 700px at 120% 120%, rgba(255,255,255,.55), transparent 50%),
+      linear-gradient(135deg, var(--bg1), var(--bg2));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    -webkit-user-select:none;
+    user-select:none;
+    overflow:hidden;
   }
-  h1 {
-    font-size: 1.5em;
-    margin-bottom: 10px;
+
+  /* Glass shell */
+  .shell{
+    width:min(94vw, 420px);
+    padding:20px 18px;
+    border-radius:24px;
+    background:var(--glass);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 20px 60px rgba(20,60,120,.18);
+    border:1px solid rgba(255,255,255,.5);
+    position:relative;
+    animation: shellIn .6s ease both;
   }
-  .instructions {
-    font-size: 0.85em;
-    text-align: left;
-    margin-bottom: 15px;
-    background: rgba(255,255,255,0.1);
-    padding: 10px;
-    border-radius: 10px;
+  @keyframes shellIn{
+    from{ transform: translateY(12px) scale(.98); opacity:0; }
+    to{ transform: translateY(0) scale(1); opacity:1; }
   }
-  #feature {
-    font-size: 1.2em;
-    margin-top: 15px;
+
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
   }
-  .weather-icon {
-    font-size: 2em;
-    animation: pulse 1.5s infinite alternate;
+  .title{
+    font-weight:800;
+    letter-spacing:.2px;
+    font-size:1.1rem;
   }
-  @keyframes pulse {
-    from { transform: scale(1); }
-    to { transform: scale(1.2); }
+  .chip{
+    font-size:.75rem;
+    padding:6px 10px;
+    border-radius:999px;
+    background:var(--glass-strong);
+    color:var(--muted);
+    border:1px solid rgba(255,255,255,.7);
+  }
+
+  /* Instructions */
+  .card{
+    margin-top:12px;
+    padding:14px;
+    border-radius:18px;
+    background:var(--glass);
+    border:1px solid rgba(255,255,255,.6);
+    box-shadow: 0 8px 28px rgba(25,60,100,.12) inset;
+  }
+  .instructions h3{
+    margin:0 0 8px 0;
+    font-size:.95rem;
+    font-weight:700;
+  }
+  .instructions ul{
+    margin:0; padding-left:18px;
+  }
+  .instructions li{
+    margin:6px 0;
+    font-size:.92rem;
+  }
+
+  /* Feature view */
+  .feature{
+    margin-top:14px;
+    padding:18px 16px;
+    border-radius:18px;
+    background:var(--glass-strong);
+    border:1px solid rgba(255,255,255,.8);
+    box-shadow: 0 10px 40px rgba(25,60,100,.14);
+    min-height:120px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:10px;
+    animation: fadeIn .35s ease both;
+  }
+  @keyframes fadeIn{
+    from{opacity:0; transform: translateY(6px);}
+    to{opacity:1; transform: translateY(0);}
+  }
+  .mode{
+    font-weight:800;
+    letter-spacing:.2px;
+    font-size:1.05rem;
+  }
+  .value{
+    font-size:1.7rem;
+    font-weight:700;
+  }
+  .hint{
+    font-size:.86rem;
+    color:var(--muted);
+  }
+
+  /* Stopwatch controls */
+  .controls{
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+  }
+  .btn{
+    padding:10px 14px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.8);
+    background:white;
+    color:var(--text);
+    font-weight:700;
+    font-size:.9rem;
+    box-shadow: 0 6px 18px rgba(20,60,120,.12);
+  }
+
+  /* Enable overlay */
+  .gate{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, rgba(207,233,255,.75), rgba(222,255,244,.78));
+    backdrop-filter: blur(10px);
+    border-radius:24px;
+    text-align:center;
+    padding:22px;
+    gap:14px;
+    flex-direction:column;
+  }
+  .gate h2{margin:0; font-size:1.2rem;}
+  .gate p{margin:0; color:var(--muted);}
+  .primary{
+    padding:12px 16px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.9);
+    background:linear-gradient(180deg, #ffffff, #eaf6ff);
+    font-weight:800;
+    letter-spacing:.3px;
+    box-shadow: 0 10px 28px rgba(20,60,120,.18);
+  }
+
+  /* Animated weather icon (pure CSS SVG) */
+  .icon-wrap{ width:64px; height:64px; position:relative; }
+  .sun {position:absolute; inset:0; border-radius:50%; background:#ffd166; box-shadow:0 0 20px rgba(255,209,102,.8) inset;}
+  .rays{
+    position:absolute; inset:-8px;
+    background:
+      conic-gradient(from 0deg,
+        #ffd166 0 10deg, transparent 10deg 20deg,
+        #ffd166 20deg 30deg, transparent 30deg 40deg,
+        #ffd166 40deg 50deg, transparent 50deg 60deg,
+        #ffd166 60deg 70deg, transparent 70deg 80deg,
+        #ffd166 80deg 90deg, transparent 90deg 100deg,
+        #ffd166 100deg 110deg, transparent 110deg 120deg,
+        #ffd166 120deg 130deg, transparent 130deg 140deg,
+        #ffd166 140deg 150deg, transparent 150deg 160deg,
+        #ffd166 160deg 170deg, transparent 170deg 180deg,
+        #ffd166 180deg 190deg, transparent 190deg 200deg,
+        #ffd166 200deg 210deg, transparent 210deg 220deg,
+        #ffd166 220deg 230deg, transparent 230deg 240deg,
+        #ffd166 240deg 250deg, transparent 250deg 260deg,
+        #ffd166 260deg 270deg, transparent 270deg 280deg,
+        #ffd166 280deg 290deg, transparent 290deg 300deg,
+        #ffd166 300deg 310deg, transparent 310deg 320deg,
+        #ffd166 320deg 330deg, transparent 330deg 340deg,
+        #ffd166 340deg 350deg, transparent 350deg 360deg);
+    -webkit-mask: radial-gradient(circle, transparent 34%, #000 35%);
+            mask: radial-gradient(circle, transparent 34%, #000 35%);
+    animation: spin 6s linear infinite;
+    border-radius:50%;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg)} }
+
+  /* Tiny top status */
+  .status{
+    position:absolute; top:8px; right:12px; font-size:.7rem; color:var(--muted);
   }
 </style>
 </head>
 <body>
 
-<div class="glass">
-  <h1>Smart Orientation App</h1>
-  <div class="instructions">
-    📜 <b>How to Use:</b><br>
-    📱 Portrait (Upright) → Alarm Clock<br>
-    🔄 Portrait (Upside Down) → Timer<br>
-    🌤 Landscape (Right Side Up) → Weather of the Day<br>
-    ⏱ Landscape (Upside Down) → Stopwatch
+<main class="shell" aria-live="polite">
+  <header>
+    <div class="title">Smart Orientation App</div>
+    <div class="chip" id="modeChip">Awaiting sensors…</div>
+  </header>
+
+  <section class="card instructions" aria-label="Instructions">
+    <h3>📜 How to Use</h3>
+    <ul>
+      <li>📱 <strong>Portrait Upright</strong> – <em>Timer</em></li>
+      <li>🔄 <strong>Portrait Upside-Down</strong> – <em>Alarm Clock</em></li>
+      <li>🌤 <strong>Landscape Right-Side-Up</strong> – <em>Weather of the Day</em></li>
+      <li>🕒 <strong>Landscape Left-Side-Up</strong> – <em>Stopwatch</em></li>
+    </ul>
+  </section>
+
+  <section class="feature" id="feature">
+    <div class="mode">Rotate your device to begin</div>
+    <div class="hint">Tap “Enable Motion & Location” when prompted.</div>
+  </section>
+
+  <div class="status" id="status">secure • https</div>
+
+  <!-- Permission Gate -->
+  <div class="gate" id="gate" role="dialog" aria-modal="true">
+    <h2>One tap to start</h2>
+    <p>We need motion & location to unlock all features.</p>
+    <button class="primary" id="enableBtn">Enable Motion & Location</button>
+    <p class="hint">Your data stays on your device.</p>
   </div>
-  <div id="feature">Rotate your device to explore features...</div>
-</div>
+</main>
 
 <script>
-const featureDiv = document.getElementById("feature");
-let orientationGranted = false;
+  /***************
+   * UTILITIES
+   ***************/
+  const $ = sel => document.querySelector(sel);
+  const feature = $('#feature');
+  const modeChip = $('#modeChip');
+  const gate = $('#gate');
+  const statusEl = $('#status');
 
-// Ask for orientation & location permissions
-async function requestPermissions() {
-  try {
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-      const response = await DeviceOrientationEvent.requestPermission();
-      if (response === 'granted') orientationGranted = true;
-    } else {
-      orientationGranted = true;
+  // Debounce to avoid mode flicker on micro-tilts
+  let switchTimer = null;
+  let currentMode = null; // 'timer' | 'alarm' | 'weather' | 'stopwatch'
+  const switchMode = (next) => {
+    if (next === currentMode) return;
+    if (switchTimer) clearTimeout(switchTimer);
+    switchTimer = setTimeout(() => {
+      currentMode = next;
+      renderMode(next);
+    }, 150); // 150ms confirmation window feels snappy but stable
+  };
+
+  // Live intervals
+  let timerInterval = null, stopwatchInterval = null, clockInterval = null;
+  let timerSeconds = 0, stopwatchMs = 0;
+
+  const clearAllIntervals = () => {
+    [timerInterval, stopwatchInterval, clockInterval].forEach(i => i && clearInterval(i));
+    timerInterval = stopwatchInterval = clockInterval = null;
+  };
+
+  /***************
+   * MODES
+   ***************/
+  function renderMode(mode){
+    clearAllIntervals();
+
+    if(mode === 'timer'){
+      modeChip.textContent = 'Timer';
+      feature.innerHTML = `
+        <div class="mode">⏱ Timer (Portrait Upright)</div>
+        <div class="value" id="timerVal">0s</div>
+        <div class="hint">Counts while you hold upright.</div>
+      `;
+      timerSeconds = 0;
+      timerInterval = setInterval(()=>{
+        timerSeconds++;
+        $('#timerVal').textContent = `${timerSeconds}s`;
+      },1000);
     }
-  } catch (err) {
-    console.error("Orientation permission error:", err);
-  }
-  
-  // Request location permission
-  navigator.geolocation.getCurrentPosition(
-    () => console.log("Location granted"),
-    (err) => console.warn("Location denied:", err)
-  );
-}
 
-requestPermissions();
-
-window.addEventListener("deviceorientation", (event) => {
-  if (!orientationGranted) return;
-  
-  const beta = event.beta;   // front-back tilt
-  const gamma = event.gamma; // left-right tilt
-  
-  if (beta > -30 && beta < 30 && gamma > -10 && gamma < 10) {
-    featureDiv.innerHTML = "⏰ Alarm Clock";
-  } 
-  else if (beta < -150 || beta > 150) {
-    featureDiv.innerHTML = "⏳ Timer";
-  } 
-  else if (gamma > 60) {
-    getWeather();
-  } 
-  else if (gamma < -60) {
-    featureDiv.innerHTML = "⏱ Stopwatch";
-  }
-});
-
-function getWeather() {
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-    const lat = pos.coords.latitude;
-    const lon = pos.coords.longitude;
-    const apiKey = "76fb51bd3cf66621ce39ca985df5aba1";
-    try {
-      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`);
-      const data = await res.json();
-      const temp = Math.round(data.main.temp);
-      const icon = data.weather[0].icon;
-      featureDiv.innerHTML = `<span class="weather-icon">🌤</span> ${temp}°C - ${data.weather[0].description}`;
-    } catch (err) {
-      featureDiv.innerHTML = "Weather unavailable 🌧";
+    if(mode === 'alarm'){
+      modeChip.textContent = 'Alarm Clock';
+      feature.innerHTML = `
+        <div class="mode">⏰ Alarm Clock (Portrait Upside-Down)</div>
+        <div class="value" id="clockVal">--:--:--</div>
+        <div class="hint">Live clock updates every second.</div>
+      `;
+      const tick = ()=> $('#clockVal').textContent = new Date().toLocaleTimeString();
+      tick();
+      clockInterval = setInterval(tick, 1000);
     }
-  }, (err) => {
-    featureDiv.innerHTML = "Location needed for weather 📍";
-  });
-}
+
+    if(mode === 'weather'){
+      modeChip.textContent = 'Weather';
+      feature.innerHTML = `
+        <div class="mode">🌤 Weather of the Day (Landscape Right)</div>
+        <div class="icon-wrap" aria-hidden="true">
+          <div class="rays"></div>
+          <div class="sun"></div>
+        </div>
+        <div class="value" id="wxVal">Loading…</div>
+        <div class="hint">Auto-location for your current spot.</div>
+      `;
+      fetchWeather();
+    }
+
+    if(mode === 'stopwatch'){
+      modeChip.textContent = 'Stopwatch';
+      feature.innerHTML = `
+        <div class="mode">🕒 Stopwatch (Landscape Left)</div>
+        <div class="value" id="swVal">00:00.0</div>
+        <div class="controls">
+          <button class="btn" id="swStart">Start</button>
+          <button class="btn" id="swStop">Stop</button>
+          <button class="btn" id="swReset">Reset</button>
+        </div>
+        <div class="hint">Manual control while in this mode.</div>
+      `;
+      bindStopwatchControls();
+    }
+  }
+
+  function bindStopwatchControls(){
+    const fmt = (ms)=>{
+      const t = Math.floor(ms/100);
+      const d = t%10;
+      const s = Math.floor(t/10)%60;
+      const m = Math.floor(t/600);
+      const pad = n=> String(n).padStart(2,'0');
+      return `${pad(m)}:${pad(s)}.${d}`;
+    };
+    const view = $('#swVal');
+    $('#swStart').onclick = ()=>{
+      if (stopwatchInterval) return;
+      let last = performance.now();
+      stopwatchInterval = setInterval(()=>{
+        const now = performance.now();
+        stopwatchMs += Math.round((now-last)/10); // tenths
+        last = now;
+        view.textContent = fmt(stopwatchMs);
+      },100);
+    };
+    $('#swStop').onclick = ()=>{
+      if (stopwatchInterval){ clearInterval(stopwatchInterval); stopwatchInterval=null; }
+    };
+    $('#swReset').onclick = ()=>{
+      stopwatchMs = 0;
+      $('#swVal').textContent = '00:00.0';
+    };
+  }
+
+  /***************
+   * WEATHER
+   ***************/
+  async function fetchWeather(){
+    if (!('geolocation' in navigator)){
+      $('#wxVal').textContent = 'Geolocation not supported';
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(async (pos)=>{
+      try{
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=76fb51bd3cf66621ce39ca985df5aba1&units=metric`);
+        const data = await res.json();
+        if (data && data.main){
+          const temp = Math.round(data.main.temp);
+          const desc = data.weather?.[0]?.description ?? '—';
+          $('#wxVal').textContent = `${temp}°C • ${desc}`;
+        }else{
+          $('#wxVal').textContent = 'Weather unavailable';
+        }
+      }catch(e){
+        $('#wxVal').textContent = 'Weather error';
+      }
+    }, ()=>{
+      $('#wxVal').textContent = 'Location permission needed';
+    }, { enableHighAccuracy:false, timeout:7000, maximumAge:180000 });
+  }
+
+  /***************
+   * PERMISSIONS
+   ***************/
+  async function enableSensors(){
+    // Motion permission (iOS)
+    try{
+      if (typeof DeviceOrientationEvent !== 'undefined' &&
+          typeof DeviceOrientationEvent.requestPermission === 'function'){
+        const p = await DeviceOrientationEvent.requestPermission();
+        if (p !== 'granted') throw new Error('motion denied');
+      }
+    }catch(e){
+      console.warn('Motion permission issue:', e?.message || e);
+    }
+
+    // Location permission (prompted on first fetch)
+    // no-op here; handled by fetchWeather/getCurrentPosition when needed.
+
+    // Start listening right away
+    startOrientation();
+    gate.style.display = 'none';
+    modeChip.textContent = 'Ready';
+  }
+
+  $('#enableBtn').addEventListener('click', enableSensors);
+
+  /***************
+   * ORIENTATION
+   ***************/
+  function startOrientation(){
+    let lastGamma = 0, lastBeta = 0;
+
+    window.addEventListener('deviceorientation', (e)=>{
+      if (e.beta === null || e.gamma === null) return;
+
+      // smooth small jitters
+      lastGamma = e.gamma * .7 + lastGamma * .3;
+      lastBeta  = e.beta  * .7 + lastBeta  * .3;
+
+      /*
+        Mapping rules (tuned for responsiveness):
+        - Portrait upright:    |beta| <= 35  & |gamma| <= 25  -> TIMER
+        - Portrait upsideDown: beta <= -140 OR beta >= 140     -> ALARM
+        - Landscape right:     gamma >= 45                      -> WEATHER
+        - Landscape left:      gamma <= -45                     -> STOPWATCH
+      */
+      if (Math.abs(lastBeta) <= 35 && Math.abs(lastGamma) <= 25){
+        switchMode('timer');
+        return;
+      }
+      if (lastGamma >= 45){
+        switchMode('weather');
+        return;
+      }
+      if (lastGamma <= -45){
+        switchMode('stopwatch');
+        return;
+      }
+      if (lastBeta <= -140 || lastBeta >= 140){
+        switchMode('alarm');
+        return;
+      }
+    }, { passive:true });
+  }
+
+  // Show a tiny https hint (diagnostics)
+  try{
+    if (location.protocol !== 'https:') statusEl.textContent = 'not secure • use https';
+  }catch{}
+
 </script>
-
 </body>
 </html>
-
