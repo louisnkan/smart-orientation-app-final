@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Orientation App</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #fceabb, #f8b500);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    color: #fff;
+  }
+  .glass {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 20px;
+    max-width: 350px;
+    text-align: center;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+    animation: fadeIn 1s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  h1 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+  }
+  .instructions {
+    font-size: 0.85em;
+    text-align: left;
+    margin-bottom: 15px;
+    background: rgba(255,255,255,0.1);
+    padding: 10px;
+    border-radius: 10px;
+  }
+  #feature {
+    font-size: 1.2em;
+    margin-top: 15px;
+  }
+  .weather-icon {
+    font-size: 2em;
+    animation: pulse 1.5s infinite alternate;
+  }
+  @keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.2); }
+  }
+</style>
+</head>
+<body>
+
+<div class="glass">
+  <h1>Smart Orientation App</h1>
+  <div class="instructions">
+    📜 <b>How to Use:</b><br>
+    📱 Portrait (Upright) → Alarm Clock<br>
+    🔄 Portrait (Upside Down) → Timer<br>
+    🌤 Landscape (Right Side Up) → Weather of the Day<br>
+    ⏱ Landscape (Upside Down) → Stopwatch
+  </div>
+  <div id="feature">Rotate your device to explore features...</div>
+</div>
+
+<script>
+const featureDiv = document.getElementById("feature");
+let orientationGranted = false;
+
+// Ask for orientation & location permissions
+async function requestPermissions() {
+  try {
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      const response = await DeviceOrientationEvent.requestPermission();
+      if (response === 'granted') orientationGranted = true;
+    } else {
+      orientationGranted = true;
+    }
+  } catch (err) {
+    console.error("Orientation permission error:", err);
+  }
+  
+  // Request location permission
+  navigator.geolocation.getCurrentPosition(
+    () => console.log("Location granted"),
+    (err) => console.warn("Location denied:", err)
+  );
+}
+
+requestPermissions();
+
+window.addEventListener("deviceorientation", (event) => {
+  if (!orientationGranted) return;
+  
+  const beta = event.beta;   // front-back tilt
+  const gamma = event.gamma; // left-right tilt
+  
+  if (beta > -30 && beta < 30 && gamma > -10 && gamma < 10) {
+    featureDiv.innerHTML = "⏰ Alarm Clock";
+  } 
+  else if (beta < -150 || beta > 150) {
+    featureDiv.innerHTML = "⏳ Timer";
+  } 
+  else if (gamma > 60) {
+    getWeather();
+  } 
+  else if (gamma < -60) {
+    featureDiv.innerHTML = "⏱ Stopwatch";
+  }
+});
+
+function getWeather() {
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    const apiKey = "76fb51bd3cf66621ce39ca985df5aba1";
+    try {
+      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`);
+      const data = await res.json();
+      const temp = Math.round(data.main.temp);
+      const icon = data.weather[0].icon;
+      featureDiv.innerHTML = `<span class="weather-icon">🌤</span> ${temp}°C - ${data.weather[0].description}`;
+    } catch (err) {
+      featureDiv.innerHTML = "Weather unavailable 🌧";
+    }
+  }, (err) => {
+    featureDiv.innerHTML = "Location needed for weather 📍";
+  });
+}
+</script>
+
+</body>
+</html>
